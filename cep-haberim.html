@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cep Haberim - Tek Dosya</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f3f5f8;
+        --surface: #ffffff;
+        --accent: #0b66ff;
+        --accent-dark: #004fcc;
+        --text: #1a1f2c;
+        --muted: #667085;
+        --border: #dde3ec;
+        --shadow: 0 8px 24px rgba(12, 24, 48, 0.08);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .app-shell { max-width: 780px; margin: 0 auto; padding: 1rem 0.9rem 2rem; }
+      .hero {
+        background: linear-gradient(145deg, #0b66ff, #4d8dff);
+        color: #fff;
+        border-radius: 20px;
+        padding: 1.2rem;
+        box-shadow: var(--shadow);
+      }
+      .hero h1 { margin: 0; font-size: 1.7rem; }
+      .hero p { margin: 0.45rem 0 0; opacity: 0.95; }
+      .controls {
+        margin-top: 1rem;
+        background: var(--surface);
+        border-radius: 16px;
+        padding: 0.9rem;
+        box-shadow: var(--shadow);
+      }
+      .controls label { font-size: 0.9rem; color: var(--muted); }
+      .control-row {
+        margin-top: 0.45rem;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.55rem;
+      }
+      select, button {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0.8rem;
+        font-size: 1rem;
+      }
+      button {
+        background: var(--accent);
+        color: #fff;
+        border: 1px solid var(--accent);
+        cursor: pointer;
+        font-weight: 600;
+      }
+      button:hover, button:focus-visible { background: var(--accent-dark); }
+      .status { margin: 0.65rem 0 0; font-size: 0.9rem; color: var(--muted); }
+      .news-list {
+        list-style: none;
+        padding: 0;
+        margin: 1rem 0 0;
+        display: grid;
+        gap: 0.75rem;
+      }
+      .news-card {
+        background: var(--surface);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .news-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        padding: 0.95rem;
+      }
+      .news-title { margin: 0; font-size: 1.05rem; line-height: 1.35; }
+      .news-summary { margin: 0.55rem 0 0; color: var(--muted); line-height: 1.5; }
+      .news-meta {
+        margin-top: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 0.7rem;
+        color: #67768b;
+        font-size: 0.82rem;
+      }
+      @media (min-width: 768px) {
+        .app-shell { padding: 1.5rem 1.25rem 2.5rem; }
+        .hero { padding: 1.4rem; }
+        .hero h1 { font-size: 1.95rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="hero">
+        <h1>Cep Haberim</h1>
+        <p>Seçtiğin kaynaktan son haberleri RSS ile anında getir.</p>
+      </header>
+
+      <section class="controls" aria-label="Kaynak seçimi">
+        <label for="sourceSelect">Haber kaynağı</label>
+        <div class="control-row">
+          <select id="sourceSelect"></select>
+          <button id="refreshBtn" type="button">Yenile</button>
+        </div>
+        <p id="statusText" class="status">Kaynak seç ve haberleri yükle.</p>
+      </section>
+
+      <section>
+        <ul id="newsList" class="news-list" aria-live="polite"></ul>
+      </section>
+    </main>
+
+    <template id="newsCardTemplate">
+      <li class="news-card">
+        <a class="news-link" target="_blank" rel="noopener noreferrer">
+          <h2 class="news-title"></h2>
+          <p class="news-summary"></p>
+          <div class="news-meta">
+            <span class="news-date"></span>
+            <span class="news-source"></span>
+          </div>
+        </a>
+      </li>
+    </template>
+
+    <script>
+      const sources = [
+        { name: 'TRT Haber - Son Dakika', rssUrl: 'https://www.trthaber.com/sondakika_articles.rss' },
+        { name: 'TRT Haber - Gündem', rssUrl: 'https://www.trthaber.com/gundem_articles.rss' },
+        { name: 'TRT Haber - Dünya', rssUrl: 'https://www.trthaber.com/dunya_articles.rss' },
+        { name: 'TRT Haber - Ekonomi', rssUrl: 'https://www.trthaber.com/ekonomi_articles.rss' },
+        { name: 'TRT Haber - Spor', rssUrl: 'https://www.trthaber.com/spor_articles.rss' },
+        { name: 'BBC Türkçe', rssUrl: 'https://feeds.bbci.co.uk/turkce/rss.xml' },
+        { name: 'NTV - Son Dakika', rssUrl: 'https://www.ntv.com.tr/son-dakika.rss' },
+        { name: 'Anadolu Ajansı - Güncel', rssUrl: 'https://www.aa.com.tr/tr/rss/default?cat=guncel' }
+      ];
+
+      const sourceSelect = document.getElementById('sourceSelect');
+      const refreshBtn = document.getElementById('refreshBtn');
+      const statusText = document.getElementById('statusText');
+      const newsList = document.getElementById('newsList');
+      const cardTemplate = document.getElementById('newsCardTemplate');
+
+      const rssProxyBase = 'https://api.allorigins.win/raw?url=';
+      const maxNewsCount = 20;
+
+      function init() {
+        sources.forEach((source, index) => {
+          const option = document.createElement('option');
+          option.value = source.rssUrl;
+          option.textContent = source.name;
+          if (index === 0) option.selected = true;
+          sourceSelect.appendChild(option);
+        });
+
+        sourceSelect.addEventListener('change', loadNews);
+        refreshBtn.addEventListener('click', loadNews);
+        loadNews();
+      }
+
+      async function loadNews() {
+        const selectedSource = sources.find((source) => source.rssUrl === sourceSelect.value);
+        if (!selectedSource) {
+          statusText.textContent = 'Geçersiz kaynak seçildi.';
+          return;
+        }
+
+        statusText.textContent = `${selectedSource.name} haberleri yükleniyor...`;
+        refreshBtn.disabled = true;
+        sourceSelect.disabled = true;
+
+        try {
+          const requestUrl = `${rssProxyBase}${encodeURIComponent(selectedSource.rssUrl)}`;
+          const response = await fetch(requestUrl);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+          const feedText = await response.text();
+          const items = parseFeed(feedText);
+          renderNews(items, selectedSource.name);
+          statusText.textContent = `${selectedSource.name} kaynağından ${items.length} haber listelendi.`;
+        } catch (error) {
+          newsList.innerHTML = '';
+          statusText.textContent = 'Haberler alınamadı. İnternetini veya kaynak bağlantısını kontrol et.';
+          console.error(error);
+        } finally {
+          refreshBtn.disabled = false;
+          sourceSelect.disabled = false;
+        }
+      }
+
+      function parseFeed(feedText) {
+        const parser = new DOMParser();
+        const xmlDocument = parser.parseFromString(feedText, 'text/xml');
+        if (xmlDocument.querySelector('parsererror')) return [];
+
+        const rssItems = Array.from(xmlDocument.querySelectorAll('item'));
+        if (rssItems.length > 0) return rssItems.slice(0, maxNewsCount).map(parseRssItem);
+
+        const atomEntries = Array.from(xmlDocument.querySelectorAll('entry'));
+        return atomEntries.slice(0, maxNewsCount).map(parseAtomEntry);
+      }
+
+      function parseRssItem(item) {
+        const title = getText(item, 'title') || 'Başlık yok';
+        const link = getText(item, 'link') || '#';
+        const description =
+          getText(item, 'description') ||
+          getText(item, 'content\\:encoded') ||
+          getText(item, 'summary') ||
+          'Özet bulunamadı.';
+
+        return {
+          title,
+          link,
+          description: cleanHtml(description),
+          publishedAt: formatDate(getText(item, 'pubDate') || getText(item, 'dc\\:date'))
+        };
+      }
+
+      function parseAtomEntry(entry) {
+        const title = getText(entry, 'title') || 'Başlık yok';
+        const linkNode =
+          entry.querySelector('link[rel="alternate"]') ||
+          entry.querySelector('link[href]') ||
+          entry.querySelector('link');
+
+        const link = linkNode?.getAttribute('href') || linkNode?.textContent?.trim() || '#';
+        const summary = getText(entry, 'summary') || getText(entry, 'content') || 'Özet bulunamadı.';
+
+        return {
+          title,
+          link,
+          description: cleanHtml(summary),
+          publishedAt: formatDate(getText(entry, 'updated') || getText(entry, 'published'))
+        };
+      }
+
+      function getText(rootNode, selector) {
+        return rootNode.querySelector(selector)?.textContent?.trim() || '';
+      }
+
+      function cleanHtml(value) {
+        const temp = document.createElement('div');
+        temp.innerHTML = value;
+        const text = temp.textContent || temp.innerText || '';
+        return text.replace(/\s+/g, ' ').trim().slice(0, 180) || 'Özet bulunamadı.';
+      }
+
+      function formatDate(dateValue) {
+        if (!dateValue) return 'Tarih yok';
+        const date = new Date(dateValue);
+        if (Number.isNaN(date.getTime())) return 'Tarih yok';
+        return new Intl.DateTimeFormat('tr-TR', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+      }
+
+      function renderNews(items, sourceName) {
+        newsList.innerHTML = '';
+        if (!items.length) {
+          const emptyMessage = document.createElement('li');
+          emptyMessage.className = 'news-card';
+          emptyMessage.innerHTML = '<p class="news-link">Bu kaynakta gösterilecek haber bulunamadı.</p>';
+          newsList.appendChild(emptyMessage);
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        items.forEach((item) => {
+          const card = cardTemplate.content.cloneNode(true);
+          const link = card.querySelector('.news-link');
+          link.href = item.link;
+          card.querySelector('.news-title').textContent = item.title;
+          card.querySelector('.news-summary').textContent = item.description;
+          card.querySelector('.news-date').textContent = item.publishedAt;
+          card.querySelector('.news-source').textContent = sourceName;
+          fragment.appendChild(card);
+        });
+        newsList.appendChild(fragment);
+      }
+
+      init();
+    </script>
+  </body>
+</html>

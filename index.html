@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cep Haberim</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="hero">
+        <h1>Cep Haberim</h1>
+        <p>Seçtiğin kaynaktan son haberleri RSS ile anında getir.</p>
+      </header>
+
+      <section class="controls" aria-label="Kaynak seçimi">
+        <label for="sourceSelect">Haber kaynağı</label>
+        <div class="control-row">
+          <select id="sourceSelect"></select>
+          <button id="refreshBtn" type="button">Yenile</button>
+        </div>
+        <p id="statusText" class="status">Kaynak seç ve haberleri yükle.</p>
+      </section>
+
+      <section>
+        <ul id="newsList" class="news-list" aria-live="polite"></ul>
+      </section>
+    </main>
+
+    <template id="newsCardTemplate">
+      <li class="news-card">
+        <a class="news-link" target="_blank" rel="noopener noreferrer">
+          <h2 class="news-title"></h2>
+          <p class="news-summary"></p>
+          <div class="news-meta">
+            <span class="news-date"></span>
+            <span class="news-source"></span>
+          </div>
+        </a>
+      </li>
+    </template>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
