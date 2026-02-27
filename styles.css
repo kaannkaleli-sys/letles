@@ -49,8 +49,14 @@ body {
   justify-content: space-between;
   gap: 0.7rem;
 }
-.hero h1 { margin: 0; font-size: 1.7rem; }
-.hero p { margin: 0.45rem 0 0; opacity: 0.95; }
+.hero h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  font-family: "Avenir Next", "SF Pro Display", "Segoe UI", "Inter", sans-serif;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.12);
+}
 
 .ghost-btn {
   background: rgba(255,255,255,0.2);
