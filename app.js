@@ -113,7 +113,6 @@ function init() {
   renderCategoryOptions();
   bindEvents();
   setupAutoRefresh();
-  loadNews();
 }
 
 function bindEvents() {
