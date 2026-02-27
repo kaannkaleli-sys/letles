@@ -319,7 +319,15 @@ const CATEGORY_FEEDS = [
   }
 ];
 
-const PROXY_BASES = ['https://api.allorigins.win/raw?url=', 'https://r.jina.ai/http://'];
+const PROXY_BASES = [
+  'https://api.allorigins.win/raw?url=',
+  'https://r.jina.ai/http://',
+  'https://cors.isomorphic-git.org/'
+];
+const JSON_PROXY_BASES = [
+  'https://api.rss2json.com/v1/api.json?rss_url=',
+  'https://api.allorigins.win/get?url='
+];
 const MAX_NEWS_COUNT = 60;
 const FETCH_TIMEOUT_MS = 12000;
 
@@ -407,12 +415,17 @@ async function fetchTextWithTimeout(url) {
   }
 }
 
-async function fetchWithFallback(feedUrl) {
-  const requestUrls = [
+function buildProxyUrls(feedUrl) {
+  return [
     feedUrl,
     `${PROXY_BASES[0]}${encodeURIComponent(feedUrl)}`,
-    `${PROXY_BASES[1]}${feedUrl.replace(/^https?:\/\//, '')}`
+    `${PROXY_BASES[1]}${feedUrl.replace(/^https?:\/\//, '')}`,
+    `${PROXY_BASES[2]}${feedUrl}`
   ];
+}
+
+async function fetchWithFallback(feedUrl) {
+  const requestUrls = buildProxyUrls(feedUrl);
 
   for (const requestUrl of requestUrls) {
     try {
@@ -423,18 +436,52 @@ async function fetchWithFallback(feedUrl) {
     }
   }
 
-  throw new Error('Feed alınamadı.');
+  throw new Error('XML feed alınamadı.');
 }
 
-async function resolveFeedText(feed) {
+async function fetchJsonFallback(feedUrl) {
+  const jsonUrls = [
+    `${JSON_PROXY_BASES[0]}${encodeURIComponent(feedUrl)}`,
+    `${JSON_PROXY_BASES[1]}${encodeURIComponent(feedUrl)}`
+  ];
+
+  for (const requestUrl of jsonUrls) {
+    try {
+      const raw = await fetchTextWithTimeout(requestUrl);
+      const parsed = JSON.parse(raw);
+
+      if (requestUrl.startsWith(JSON_PROXY_BASES[1])) {
+        const nested = JSON.parse(parsed.contents || '{}');
+        if (nested.items?.length || nested.feed?.title) return nested;
+      } else if (parsed.items?.length || parsed.feed?.title) {
+        return parsed;
+      }
+    } catch (error) {
+      console.warn('JSON fallback başarısız:', requestUrl, error.message);
+    }
+  }
+
+  return null;
+}
+
+async function resolveFeedItems(feed) {
   const urlCandidates = feed.urls?.length ? feed.urls : [feed.url];
 
   for (const candidate of urlCandidates) {
     if (!candidate) continue;
+
     try {
-      return await fetchWithFallback(candidate);
+      const feedText = await fetchWithFallback(candidate);
+      const xmlItems = parseFeed(feedText, feed.source);
+      if (xmlItems.length > 0) return xmlItems;
     } catch (error) {
-      console.warn('Alternatif feed başarısız:', candidate, error.message);
+      console.warn('XML/Proxy alternatif başarısız:', candidate, error.message);
+    }
+
+    const json = await fetchJsonFallback(candidate);
+    if (json) {
+      const jsonItems = parseJsonFeed(json, feed.source);
+      if (jsonItems.length > 0) return jsonItems;
     }
   }
 
@@ -453,8 +500,7 @@ async function loadNews() {
   try {
     const settled = await Promise.allSettled(
       selectedCategory.feeds.map(async (feed) => {
-        const feedText = await resolveFeedText(feed);
-        return parseFeed(feedText, feed.source);
+        return await resolveFeedItems(feed);
       })
     );
 
@@ -532,6 +578,19 @@ function parseFeed(feedText, sourceName) {
 
   const atomEntries = Array.from(xml.querySelectorAll('entry'));
   return atomEntries.map((entry) => parseAtomEntry(entry, sourceName));
+}
+
+function parseJsonFeed(jsonData, sourceName) {
+  const items = Array.isArray(jsonData?.items) ? jsonData.items : [];
+  return items.map((item) => ({
+    id: item.guid || item.link || crypto.randomUUID(),
+    title: (item.title || '').trim() || 'Başlık yok',
+    link: normalizeLink(item.link || ''),
+    description: cleanHtml(item.description || item.content || 'Özet bulunamadı.'),
+    publishedAt: getDate(item.pubDate || item.published || item.updated),
+    image: item.thumbnail || item.enclosure?.link || item.enclosure || '',
+    sourceName
+  }));
 }
 
 function parseRssItem(item, sourceName) {

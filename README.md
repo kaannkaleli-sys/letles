@@ -31,4 +31,4 @@ Tek dosyayı yeniden üretmek için:
 python3 tek_dosya_uret.py
 ```
 
-> Not: Bazı RSS kaynaklarında CORS/proxy erişim kısıtları olabilir.
+> Not: Mobil internet/CORS sorunları için uygulama artık birden fazla proxy ve JSON fallback denemesi yapar; yine de bazı kaynaklar dönemsel olarak engellenebilir.
