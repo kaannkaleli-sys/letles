@@ -1,16 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Cep Haberim">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Cep Haberim Haber İkonu">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0b66ff"/>
-      <stop offset="100%" stop-color="#4d8dff"/>
+      <stop offset="0%" stop-color="#0b66ff" />
+      <stop offset="100%" stop-color="#1e40af" />
+    </linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#eaf0ff" />
     </linearGradient>
   </defs>
-  <rect width="256" height="256" rx="56" fill="url(#bg)"/>
-  <rect x="48" y="54" width="160" height="148" rx="18" fill="white" opacity="0.95"/>
-  <rect x="66" y="78" width="96" height="14" rx="7" fill="#0b66ff"/>
-  <rect x="66" y="103" width="124" height="10" rx="5" fill="#9bbcff"/>
-  <rect x="66" y="122" width="116" height="10" rx="5" fill="#b8ceff"/>
-  <rect x="66" y="141" width="100" height="10" rx="5" fill="#d0ddff"/>
-  <circle cx="191" cy="184" r="22" fill="#0b66ff"/>
-  <path d="M182 184h18M191 175v18" stroke="white" stroke-width="6" stroke-linecap="round"/>
+
+  <rect width="256" height="256" rx="56" fill="url(#bg)" />
+
+  <rect x="42" y="44" width="172" height="168" rx="22" fill="url(#paper)" />
+
+  <rect x="58" y="64" width="76" height="24" rx="8" fill="#ef4444" />
+  <text x="96" y="81" font-size="13" font-family="Arial, sans-serif" fill="white" text-anchor="middle" font-weight="700">SON DAKİKA</text>
+
+  <rect x="58" y="102" width="140" height="11" rx="5.5" fill="#1e3a8a" />
+  <rect x="58" y="120" width="130" height="9" rx="4.5" fill="#6b87d8" />
+  <rect x="58" y="136" width="124" height="9" rx="4.5" fill="#89a3e5" />
+  <rect x="58" y="152" width="116" height="9" rx="4.5" fill="#a8bbef" />
+
+  <circle cx="186" cy="176" r="21" fill="#2563eb" />
+  <path d="M176 176h20M186 166v20" stroke="white" stroke-width="6" stroke-linecap="round" />
 </svg>
