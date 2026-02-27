@@ -14,7 +14,10 @@ Ardından aç:
 - Haber sitesi seçimi yerine kategori başlığına göre birleşik akış (Son Dakika, Güncel, Spor, Ekonomi, Dünya, Teknoloji, Magazin).
 - Daha dayanıklı veri çekme: doğrudan istek + proxy fallback + timeout + aynı kaynak için alternatif RSS adresleri.
 - Kısmi hata toleransı: bazı kaynaklar düşse bile çalışan kaynaklarla liste devam eder.
+- Haberler, başlık+özet içeriğine göre kategori anahtar kelimeleriyle doğrulanır; konu dışı haberler doğru başlığa yönlendirilir.
+- Kategori seçildiğinde sadece kendi feed’i değil, tüm kaynaklar taranıp içerik eşleşmesine göre doğru başlıkta gösterim yapılır.
 - Link, tarih, içerik temizliği ve tekrar eden haberleri tekilleştirme.
+- Haberde görsel varsa XML/JSON/HTML içinden daha agresif çıkarım yapılarak kartta gösterilir.
 - Favori/okundu durumu, arama, sıralama, otomatik yenileme ve tema kalıcılığı.
 - iOS uyumluluğu için safe-area, 16px form alanı ve paylaşım fallback desteği.
 

@@ -331,6 +331,17 @@ const JSON_PROXY_BASES = [
 const MAX_NEWS_COUNT = 60;
 const FETCH_TIMEOUT_MS = 12000;
 
+
+const CATEGORY_KEYWORDS = {
+  'son-dakika': ['son dakika', 'acil', 'flaş', 'flas'],
+  guncel: ['gündem', 'guncel', 'siyaset', 'belediye', 'bakan', 'meclis'],
+  spor: ['spor', 'futbol', 'basketbol', 'voleybol', 'maç', 'mac', 'transfer'],
+  ekonomi: ['ekonomi', 'borsa', 'dolar', 'euro', 'altın', 'faiz', 'enflasyon', 'finans'],
+  dunya: ['dünya', 'dunya', 'avrupa', 'abd', 'rusya', 'ukrayna', 'gazze', 'israil', 'uluslararası'],
+  teknoloji: ['teknoloji', 'yapay zeka', 'apple', 'google', 'android', 'ios', 'yazılım', 'yazilim', 'telefon'],
+  magazin: ['magazin', 'ünlü', 'unlu', 'dizi', 'oyuncu', 'sanatçı', 'sanatci', 'konser']
+};
+
 const STORAGE_KEYS = {
   favorites: 'favorites',
   readNews: 'readNews',
@@ -394,6 +405,17 @@ function renderCategoryOptions() {
     fragment.appendChild(option);
   });
   sourceSelect.appendChild(fragment);
+}
+
+
+function getAllFeedsWithCategory() {
+  const allFeeds = [];
+  CATEGORY_FEEDS.forEach((category) => {
+    category.feeds.forEach((feed) => {
+      allFeeds.push({ ...feed, categoryKey: category.key });
+    });
+  });
+  return allFeeds;
 }
 
 function switchView(view) {
@@ -473,7 +495,7 @@ async function resolveFeedItems(feed) {
     try {
       const feedText = await fetchWithFallback(candidate);
       const xmlItems = parseFeed(feedText, feed.source);
-      if (xmlItems.length > 0) return xmlItems;
+      if (xmlItems.length > 0) return xmlItems.map((item) => ({ ...item, sourceCategory: feed.categoryKey || 'unknown' }));
     } catch (error) {
       console.warn('XML/Proxy alternatif başarısız:', candidate, error.message);
     }
@@ -481,7 +503,7 @@ async function resolveFeedItems(feed) {
     const json = await fetchJsonFallback(candidate);
     if (json) {
       const jsonItems = parseJsonFeed(json, feed.source);
-      if (jsonItems.length > 0) return jsonItems;
+      if (jsonItems.length > 0) return jsonItems.map((item) => ({ ...item, sourceCategory: feed.categoryKey || 'unknown' }));
     }
   }
 
@@ -498,8 +520,9 @@ async function loadNews() {
   setLoading(true, `${selectedCategory.name} haberleri yükleniyor...`);
 
   try {
+    const allFeeds = getAllFeedsWithCategory();
     const settled = await Promise.allSettled(
-      selectedCategory.feeds.map(async (feed) => {
+      allFeeds.map(async (feed) => {
         return await resolveFeedItems(feed);
       })
     );
@@ -513,6 +536,8 @@ async function loadNews() {
     });
 
     state.allNews = deduplicateNews(merged)
+      .map((item) => ({ ...item, inferredCategory: inferCategory(item) }))
+      .filter((item) => item.inferredCategory === selectedCategory.key || (item.inferredCategory === 'unknown' && item.sourceCategory === selectedCategory.key))
       .sort((a, b) => getTime(b.publishedAt) - getTime(a.publishedAt))
       .slice(0, MAX_NEWS_COUNT);
 
@@ -521,7 +546,7 @@ async function loadNews() {
     applyAndRender();
 
     const failInfo = failedCount ? ` • ${failedCount} kaynak alınamadı` : '';
-    statusText.textContent = `${selectedCategory.name}: ${state.allNews.length} haber güncellendi${failInfo}.`;
+    statusText.textContent = `${selectedCategory.name}: ${state.allNews.length} haber güncellendi${failInfo} • ${allFeeds.length} kaynak tarandı.`;
   } catch (error) {
     state.allNews = readCachedNews(selectedCategory.key);
     applyAndRender();
@@ -582,15 +607,22 @@ function parseFeed(feedText, sourceName) {
 
 function parseJsonFeed(jsonData, sourceName) {
   const items = Array.isArray(jsonData?.items) ? jsonData.items : [];
-  return items.map((item) => ({
-    id: item.guid || item.link || crypto.randomUUID(),
-    title: (item.title || '').trim() || 'Başlık yok',
-    link: normalizeLink(item.link || ''),
-    description: cleanHtml(item.description || item.content || 'Özet bulunamadı.'),
-    publishedAt: getDate(item.pubDate || item.published || item.updated),
-    image: item.thumbnail || item.enclosure?.link || item.enclosure || '',
-    sourceName
-  }));
+  return items.map((item) => {
+    const rawHtml = item.description || item.content || '';
+    const htmlImage = extractImageFromHtml(rawHtml);
+    const enclosureImage = typeof item.enclosure === 'string' ? item.enclosure : item.enclosure?.link;
+    const mediaImage = item.media?.content || item.media?.url;
+
+    return {
+      id: item.guid || item.link || crypto.randomUUID(),
+      title: (item.title || '').trim() || 'Başlık yok',
+      link: normalizeLink(item.link || ''),
+      description: cleanHtml(rawHtml || 'Özet bulunamadı.'),
+      publishedAt: getDate(item.pubDate || item.published || item.updated),
+      image: item.thumbnail || item.image || mediaImage || enclosureImage || htmlImage || '',
+      sourceName
+    };
+  });
 }
 
 function parseRssItem(item, sourceName) {
@@ -630,13 +662,32 @@ function getImageFromNode(root) {
   const mediaThumb = root.querySelector('media\\:thumbnail')?.getAttribute('url');
   const mediaContent = root.querySelector('media\\:content')?.getAttribute('url');
   const enclosure = root.querySelector('enclosure[type^="image"]')?.getAttribute('url');
-  const html = getText(root, 'description') || getText(root, 'content') || '';
-  const htmlMatch = html.match(/<img[^>]+src=["']([^"']+)["']/i);
-  return mediaThumb || mediaContent || enclosure || htmlMatch?.[1] || '';
+  const contentEncoded = getText(root, 'content\\:encoded');
+  const html = getText(root, 'description') || getText(root, 'content') || contentEncoded || '';
+  const htmlImage = extractImageFromHtml(html);
+  return mediaThumb || mediaContent || enclosure || htmlImage || '';
 }
 
 function getText(rootNode, selector) {
   return rootNode.querySelector(selector)?.textContent?.trim() || '';
+}
+
+function extractImageFromHtml(html) {
+  if (!html) return '';
+
+  const imgMatch = html.match(/<img[^>]+(?:src|data-src|data-original)=["']([^"']+)["']/i);
+  if (imgMatch?.[1]) return imgMatch[1];
+
+  const ogMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i);
+  if (ogMatch?.[1]) return ogMatch[1];
+
+  const srcSetMatch = html.match(/<img[^>]+srcset=["']([^"']+)["']/i);
+  if (srcSetMatch?.[1]) {
+    const first = srcSetMatch[1].split(',')[0]?.trim().split(' ')[0];
+    if (first) return first;
+  }
+
+  return '';
 }
 
 function cleanHtml(value) {
@@ -653,6 +704,26 @@ function getDate(dateValue) {
 function formatDate(date) {
   if (!date) return 'Tarih yok';
   return new Intl.DateTimeFormat('tr-TR', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+}
+
+function inferCategory(item) {
+  const text = `${item.title || ''} ${item.description || ''}`.toLowerCase();
+
+  let bestKey = 'unknown';
+  let bestScore = 0;
+
+  Object.entries(CATEGORY_KEYWORDS).forEach(([key, words]) => {
+    let score = 0;
+    words.forEach((word) => {
+      if (text.includes(word)) score += 1;
+    });
+    if (score > bestScore) {
+      bestScore = score;
+      bestKey = key;
+    }
+  });
+
+  return bestKey;
 }
 
 function applyAndRender() {
