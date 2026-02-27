@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Cep Haberim</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="theme-color" content="#0b66ff" />
+    <style>
+:root {
+  color-scheme: light;
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --accent: #0b66ff;
+  --accent-dark: #004fcc;
+  --text: #1a1f2c;
+  --muted: #667085;
+  --border: #dde3ec;
+  --chip: #eef3ff;
+  --shadow: 0 8px 24px rgba(12, 24, 48, 0.08);
+}
+
+body.dark {
+  --bg: #111827;
+  --surface: #1f2937;
+  --accent: #3b82f6;
+  --accent-dark: #2563eb;
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --border: #334155;
+  --chip: #1e3a8a;
+  --shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app-shell {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: calc(1rem + env(safe-area-inset-top)) calc(0.9rem + env(safe-area-inset-right)) calc(2rem + env(safe-area-inset-bottom)) calc(0.9rem + env(safe-area-inset-left));
+}
+.hero {
+  background: linear-gradient(145deg, #0b66ff, #4d8dff);
+  color: #fff;
+  border-radius: 20px;
+  padding: 1rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+.hero h1 { margin: 0; font-size: 1.7rem; }
+.hero p { margin: 0.45rem 0 0; opacity: 0.95; }
+
+.ghost-btn {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.35);
+  color: #fff;
+  border-radius: 12px;
+  padding: 0.65rem 0.75rem;
+  cursor: pointer;
+}
+
+.controls {
+  margin-top: 1rem;
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 0.9rem;
+  box-shadow: var(--shadow);
+}
+label { font-size: 0.82rem; color: var(--muted); display: block; margin-bottom: 0.35rem; }
+.control-row { display: grid; grid-template-columns: 1fr auto; gap: 0.55rem; }
+.control-grid { margin-top: 0.75rem; display: grid; gap: 0.6rem; grid-template-columns: 1fr; }
+
+select, button, input {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.76rem;
+  font-size: 16px;
+  background: var(--surface);
+  color: var(--text);
+  -webkit-appearance: none;
+  appearance: none;
+}
+button { background: var(--accent); color: #fff; border-color: var(--accent); cursor: pointer; font-weight: 600; }
+button:hover, button:focus-visible { background: var(--accent-dark); }
+
+.check-row { display: flex; justify-content: space-between; gap: 0.5rem; align-items: center; margin-top: 0.7rem; flex-wrap: wrap; }
+.check-item { display: flex; gap: 0.4rem; align-items: center; margin: 0; }
+.check-item input { margin: 0; }
+
+.segmented { display: flex; gap: 0.45rem; margin-top: 0.75rem; }
+.segmented-btn { background: var(--chip); color: var(--text); border-color: transparent; }
+.segmented-btn.active { background: var(--accent); color: #fff; }
+
+.status { margin: 0.65rem 0 0; font-size: 0.88rem; color: var(--muted); }
+.status.small { font-size: 0.79rem; }
+.news-list { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: 0.75rem; }
+.news-card { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; }
+.news-card.read { opacity: 0.8; }
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.5rem 0;
+}
+.read-badge {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+}
+.news-card.read .read-badge {
+  background: #e5e7eb;
+  color: #374151;
+}
+.tiny-btn {
+  padding: 0.3rem 0.55rem;
+  font-size: 0.78rem;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--text);
+  border-color: transparent;
+}
+.tiny-btn.active { background: #f59e0b; color: #111827; }
+
+.news-link { display: block; text-decoration: none; color: inherit; padding: 0.75rem 0.95rem 0.95rem; }
+.news-image {
+  width: 100%;
+  max-height: 190px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: none;
+  margin-bottom: 0.65rem;
+}
+.news-image.show { display: block; }
+.news-title { margin: 0; font-size: 1.05rem; line-height: 1.35; }
+.news-summary { margin: 0.55rem 0 0; color: var(--muted); line-height: 1.45; }
+.news-meta { margin-top: 0.75rem; display: flex; justify-content: space-between; gap: 0.7rem; color: var(--muted); font-size: 0.8rem; }
+
+@media (min-width: 768px) {
+  .app-shell { padding: 1.5rem 1.25rem 2.5rem; }
+  .control-grid { grid-template-columns: 1fr 0.7fr 0.7fr; }
+}
+
+</style>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="hero">
+        <div>
+          <h1>Cep Haberim</h1>
+          <p>Başlıklara göre birleştirilmiş RSS/Atom haber akışı.</p>
+        </div>
+        <button id="themeBtn" type="button" class="ghost-btn">🌙 Tema</button>
+      </header>
+
+      <section class="controls" aria-label="Haber filtreleri">
+        <label for="sourceSelect">Haber başlığı</label>
+        <div class="control-row">
+          <select id="sourceSelect"></select>
+          <button id="refreshBtn" type="button">Yenile</button>
+        </div>
+
+        <div class="control-grid">
+          <div>
+            <label for="searchInput">Ara</label>
+            <input id="searchInput" type="search" placeholder="Başlık, özet veya kaynak içinde ara..." />
+          </div>
+          <div>
+            <label for="sortSelect">Sırala</label>
+            <select id="sortSelect">
+              <option value="newest">En yeni</option>
+              <option value="oldest">En eski</option>
+            </select>
+          </div>
+          <div>
+            <label for="autoRefreshSelect">Otomatik yenile</label>
+            <select id="autoRefreshSelect">
+              <option value="0">Kapalı</option>
+              <option value="60">1 dk</option>
+              <option value="180">3 dk</option>
+              <option value="300">5 dk</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="check-row">
+          <label class="check-item"><input id="unreadOnlyCheck" type="checkbox" /> Sadece okunmayanlar</label>
+          <button id="clearReadBtn" class="tiny-btn" type="button">Okunma geçmişini temizle</button>
+        </div>
+
+        <div class="segmented" role="tablist" aria-label="Görünüm modu">
+          <button id="allTab" type="button" class="segmented-btn active">Tüm Haberler</button>
+          <button id="favoritesTab" type="button" class="segmented-btn">Favoriler</button>
+        </div>
+
+        <p id="statusText" class="status">Başlık seç ve haberleri yükle.</p>
+        <p id="statsText" class="status small"></p>
+      </section>
+
+      <section>
+        <ul id="newsList" class="news-list" aria-live="polite"></ul>
+      </section>
+    </main>
+
+    <template id="newsCardTemplate">
+      <li class="news-card">
+        <div class="card-actions">
+          <span class="read-badge">Yeni</span>
+          <div>
+            <button class="tiny-btn fav-btn" type="button">☆ Favori</button>
+            <button class="tiny-btn share-btn" type="button">Paylaş</button>
+          </div>
+        </div>
+        <a class="news-link" target="_blank" rel="noopener noreferrer">
+          <img class="news-image" alt="Haber görseli" loading="lazy" />
+          <h2 class="news-title"></h2>
+          <p class="news-summary"></p>
+          <div class="news-meta">
+            <span class="news-date"></span>
+            <span class="news-source"></span>
+          </div>
+        </a>
+      </li>
+    </template>
+
+    <script>
+const CATEGORY_FEEDS = [
+  {
+    key: 'son-dakika',
+    name: 'Son Dakika',
+    feeds: [
+      { source: 'NTV', url: 'https://www.ntv.com.tr/son-dakika.rss' },
+      { source: 'Hürriyet', url: 'https://www.hurriyet.com.tr/rss/anasayfa' },
+      { source: 'Milliyet', url: 'https://www.milliyet.com.tr/rss/rssnew/sondakikarss.xml' }
+    ]
+  },
+  {
+    key: 'guncel',
+    name: 'Güncel',
+    feeds: [
+      { source: 'CNN Türk', url: 'https://www.cnnturk.com/feed/rss/all/news' },
+      { source: 'Habertürk', url: 'https://www.haberturk.com/rss' },
+      { source: 'Sözcü', url: 'https://www.sozcu.com.tr/feeds-rss-category-gundem' }
+    ]
+  },
+  {
+    key: 'spor',
+    name: 'Spor',
+    feeds: [
+      { source: 'NTV Spor', url: 'https://www.ntvspor.net/rss' },
+      { source: 'Sözcü Spor', url: 'https://www.sozcu.com.tr/feeds-rss-category-spor' }
+    ]
+  },
+  {
+    key: 'ekonomi',
+    name: 'Ekonomi',
+    feeds: [
+      { source: 'Hürriyet Ekonomi', url: 'https://www.hurriyet.com.tr/rss/ekonomi' },
+      { source: 'AA Ekonomi', url: 'https://www.aa.com.tr/tr/rss/default?cat=ekonomi' }
+    ]
+  },
+  {
+    key: 'dunya',
+    name: 'Dünya',
+    feeds: [
+      { source: 'BBC Türkçe', url: 'https://feeds.bbci.co.uk/turkce/rss.xml' },
+      { source: 'Cumhuriyet Dünya', url: 'https://www.cumhuriyet.com.tr/rss/8.xml' }
+    ]
+  }
+];
+
+const PROXY_BASES = ['https://api.allorigins.win/raw?url=', 'https://r.jina.ai/http://'];
+const MAX_NEWS_COUNT = 60;
+const FETCH_TIMEOUT_MS = 12000;
+
+const STORAGE_KEYS = {
+  favorites: 'favorites',
+  readNews: 'readNews',
+  theme: 'theme'
+};
+
+const $ = (id) => document.getElementById(id);
+const sourceSelect = $('sourceSelect');
+const refreshBtn = $('refreshBtn');
+const searchInput = $('searchInput');
+const sortSelect = $('sortSelect');
+const autoRefreshSelect = $('autoRefreshSelect');
+const unreadOnlyCheck = $('unreadOnlyCheck');
+const clearReadBtn = $('clearReadBtn');
+const statusText = $('statusText');
+const statsText = $('statsText');
+const newsList = $('newsList');
+const themeBtn = $('themeBtn');
+const allTab = $('allTab');
+const favoritesTab = $('favoritesTab');
+const cardTemplate = $('newsCardTemplate');
+
+const state = {
+  allNews: [],
+  currentView: 'all',
+  timerId: null,
+  lastUpdateAt: null,
+  favorites: loadSet(STORAGE_KEYS.favorites),
+  readNews: loadSet(STORAGE_KEYS.readNews)
+};
+
+init();
+
+function init() {
+  restoreTheme();
+  renderCategoryOptions();
+  bindEvents();
+  setupAutoRefresh();
+  loadNews();
+}
+
+function bindEvents() {
+  sourceSelect.addEventListener('change', loadNews);
+  refreshBtn.addEventListener('click', loadNews);
+  searchInput.addEventListener('input', applyAndRender);
+  sortSelect.addEventListener('change', applyAndRender);
+  autoRefreshSelect.addEventListener('change', setupAutoRefresh);
+  unreadOnlyCheck.addEventListener('change', applyAndRender);
+  clearReadBtn.addEventListener('click', clearReadHistory);
+  themeBtn.addEventListener('click', toggleTheme);
+  allTab.addEventListener('click', () => switchView('all'));
+  favoritesTab.addEventListener('click', () => switchView('favorites'));
+}
+
+function renderCategoryOptions() {
+  const fragment = document.createDocumentFragment();
+  CATEGORY_FEEDS.forEach((category, index) => {
+    const option = document.createElement('option');
+    option.value = category.key;
+    option.textContent = `${category.name} (${category.feeds.length} kaynak)`;
+    option.selected = index === 0;
+    fragment.appendChild(option);
+  });
+  sourceSelect.appendChild(fragment);
+}
+
+function switchView(view) {
+  state.currentView = view;
+  allTab.classList.toggle('active', view === 'all');
+  favoritesTab.classList.toggle('active', view === 'favorites');
+  applyAndRender();
+}
+
+async function fetchTextWithTimeout(url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.text();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function fetchWithFallback(feedUrl) {
+  const requestUrls = [
+    feedUrl,
+    `${PROXY_BASES[0]}${encodeURIComponent(feedUrl)}`,
+    `${PROXY_BASES[1]}${feedUrl.replace(/^https?:\/\//, '')}`
+  ];
+
+  for (const requestUrl of requestUrls) {
+    try {
+      const text = await fetchTextWithTimeout(requestUrl);
+      if (text && text.length > 40) return text;
+    } catch (error) {
+      console.warn('Feed denemesi başarısız:', requestUrl, error.message);
+    }
+  }
+
+  throw new Error('Feed alınamadı.');
+}
+
+async function loadNews() {
+  const selectedCategory = CATEGORY_FEEDS.find((category) => category.key === sourceSelect.value);
+  if (!selectedCategory) {
+    statusText.textContent = 'Geçersiz başlık seçildi.';
+    return;
+  }
+
+  setLoading(true, `${selectedCategory.name} haberleri yükleniyor...`);
+
+  try {
+    const settled = await Promise.allSettled(
+      selectedCategory.feeds.map(async (feed) => {
+        const feedText = await fetchWithFallback(feed.url);
+        return parseFeed(feedText, feed.source);
+      })
+    );
+
+    const merged = [];
+    let failedCount = 0;
+
+    settled.forEach((result) => {
+      if (result.status === 'fulfilled') merged.push(...result.value);
+      else failedCount += 1;
+    });
+
+    state.allNews = deduplicateNews(merged)
+      .sort((a, b) => getTime(b.publishedAt) - getTime(a.publishedAt))
+      .slice(0, MAX_NEWS_COUNT);
+
+    state.lastUpdateAt = new Date();
+    localStorage.setItem(cacheKey(selectedCategory.key), JSON.stringify(state.allNews));
+    applyAndRender();
+
+    const failInfo = failedCount ? ` • ${failedCount} kaynak alınamadı` : '';
+    statusText.textContent = `${selectedCategory.name}: ${state.allNews.length} haber güncellendi${failInfo}.`;
+  } catch (error) {
+    state.allNews = readCachedNews(selectedCategory.key);
+    applyAndRender();
+    statusText.textContent =
+      state.allNews.length > 0
+        ? 'Canlı veri alınamadı, kayıtlı haberler gösteriliyor.'
+        : 'Haberler alınamadı. Lütfen daha sonra tekrar dene.';
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function getTime(date) {
+  return date instanceof Date && !Number.isNaN(date.getTime()) ? date.getTime() : 0;
+}
+
+function deduplicateNews(items) {
+  const map = new Map();
+  items.forEach((item) => {
+    const identity = item.link && item.link !== '#' ? item.link : `${item.sourceName}:${item.title}`;
+    if (!map.has(identity)) map.set(identity, item);
+  });
+  return Array.from(map.values());
+}
+
+function readCachedNews(cacheId) {
+  const cached = localStorage.getItem(cacheKey(cacheId));
+  if (!cached) return [];
+
+  try {
+    return JSON.parse(cached).map((item) => ({ ...item, publishedAt: item.publishedAt ? new Date(item.publishedAt) : null }));
+  } catch {
+    return [];
+  }
+}
+
+function cacheKey(id) {
+  return `cache:${id}`;
+}
+
+function setLoading(isLoading, message = '') {
+  refreshBtn.disabled = isLoading;
+  sourceSelect.disabled = isLoading;
+  if (message) statusText.textContent = message;
+}
+
+function parseFeed(feedText, sourceName) {
+  const xml = new DOMParser().parseFromString(feedText, 'text/xml');
+  if (xml.querySelector('parsererror')) return [];
+
+  const rssItems = Array.from(xml.querySelectorAll('item'));
+  if (rssItems.length > 0) return rssItems.map((item) => parseRssItem(item, sourceName));
+
+  const atomEntries = Array.from(xml.querySelectorAll('entry'));
+  return atomEntries.map((entry) => parseAtomEntry(entry, sourceName));
+}
+
+function parseRssItem(item, sourceName) {
+  return {
+    id: getText(item, 'guid') || getText(item, 'link') || crypto.randomUUID(),
+    title: getText(item, 'title') || 'Başlık yok',
+    link: normalizeLink(getText(item, 'link')),
+    description: cleanHtml(getText(item, 'description') || getText(item, 'content\\:encoded') || 'Özet bulunamadı.'),
+    publishedAt: getDate(getText(item, 'pubDate') || getText(item, 'dc\\:date')),
+    image: getImageFromNode(item),
+    sourceName
+  };
+}
+
+function parseAtomEntry(entry, sourceName) {
+  const linkNode = entry.querySelector('link[rel="alternate"]') || entry.querySelector('link[href]') || entry.querySelector('link');
+  const link = linkNode?.getAttribute('href') || linkNode?.textContent?.trim() || '#';
+
+  return {
+    id: getText(entry, 'id') || link || crypto.randomUUID(),
+    title: getText(entry, 'title') || 'Başlık yok',
+    link: normalizeLink(link),
+    description: cleanHtml(getText(entry, 'summary') || getText(entry, 'content') || 'Özet bulunamadı.'),
+    publishedAt: getDate(getText(entry, 'updated') || getText(entry, 'published')),
+    image: getImageFromNode(entry),
+    sourceName
+  };
+}
+
+function normalizeLink(value) {
+  if (!value) return '#';
+  if (/^https?:\/\//i.test(value)) return value;
+  return '#';
+}
+
+function getImageFromNode(root) {
+  const mediaThumb = root.querySelector('media\\:thumbnail')?.getAttribute('url');
+  const mediaContent = root.querySelector('media\\:content')?.getAttribute('url');
+  const enclosure = root.querySelector('enclosure[type^="image"]')?.getAttribute('url');
+  const html = getText(root, 'description') || getText(root, 'content') || '';
+  const htmlMatch = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+  return mediaThumb || mediaContent || enclosure || htmlMatch?.[1] || '';
+}
+
+function getText(rootNode, selector) {
+  return rootNode.querySelector(selector)?.textContent?.trim() || '';
+}
+
+function cleanHtml(value) {
+  const temp = document.createElement('div');
+  temp.innerHTML = value;
+  return (temp.textContent || temp.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 240) || 'Özet bulunamadı.';
+}
+
+function getDate(dateValue) {
+  const date = new Date(dateValue);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatDate(date) {
+  if (!date) return 'Tarih yok';
+  return new Intl.DateTimeFormat('tr-TR', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+}
+
+function applyAndRender() {
+  const keyword = searchInput.value.trim().toLowerCase();
+  const direction = sortSelect.value;
+
+  let filtered = [...state.allNews];
+  if (state.currentView === 'favorites') filtered = filtered.filter((news) => state.favorites.has(news.id));
+  if (unreadOnlyCheck.checked) filtered = filtered.filter((news) => !state.readNews.has(news.id));
+  if (keyword) filtered = filtered.filter((news) => `${news.title} ${news.description} ${news.sourceName}`.toLowerCase().includes(keyword));
+
+  filtered.sort((a, b) => {
+    const delta = getTime(b.publishedAt) - getTime(a.publishedAt);
+    return direction === 'newest' ? delta : -delta;
+  });
+
+  updateStats(filtered.length);
+  renderNews(filtered);
+}
+
+function updateStats(visibleCount) {
+  const readCount = state.allNews.filter((news) => state.readNews.has(news.id)).length;
+  const favoriteCount = state.allNews.filter((news) => state.favorites.has(news.id)).length;
+  const last = state.lastUpdateAt ? ` • Son güncelleme: ${formatDate(state.lastUpdateAt)}` : '';
+  statsText.textContent = `Toplam: ${state.allNews.length} • Görünen: ${visibleCount} • Favori: ${favoriteCount} • Okundu: ${readCount}${last}`;
+}
+
+function renderNews(items) {
+  newsList.innerHTML = '';
+
+  if (!items.length) {
+    const emptyMessage = document.createElement('li');
+    emptyMessage.className = 'news-card';
+    emptyMessage.innerHTML = '<p class="news-link">Bu filtrede haber bulunamadı. Aramayı temizleyip tekrar dene.</p>';
+    newsList.appendChild(emptyMessage);
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  items.forEach((item) => {
+    const card = cardTemplate.content.cloneNode(true);
+    const root = card.querySelector('.news-card');
+    const link = card.querySelector('.news-link');
+    const favBtn = card.querySelector('.fav-btn');
+    const shareBtn = card.querySelector('.share-btn');
+    const image = card.querySelector('.news-image');
+    const readBadge = card.querySelector('.read-badge');
+
+    const isRead = state.readNews.has(item.id);
+    const isFavorite = state.favorites.has(item.id);
+
+    root.classList.toggle('read', isRead);
+    readBadge.textContent = isRead ? 'Okundu' : 'Yeni';
+
+    link.href = item.link;
+    link.addEventListener('click', () => markAsRead(item.id));
+
+    card.querySelector('.news-title').textContent = item.title;
+    card.querySelector('.news-summary').textContent = item.description;
+    card.querySelector('.news-date').textContent = formatDate(item.publishedAt);
+    card.querySelector('.news-source').textContent = item.sourceName;
+
+    if (item.image) {
+      image.src = item.image;
+      image.classList.add('show');
+    }
+
+    favBtn.classList.toggle('active', isFavorite);
+    favBtn.textContent = isFavorite ? '★ Favori' : '☆ Favori';
+    favBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      toggleFavorite(item.id);
+      applyAndRender();
+    });
+
+    shareBtn.addEventListener('click', async (event) => {
+      event.preventDefault();
+      await shareNews(item);
+    });
+
+    fragment.appendChild(card);
+  });
+
+  newsList.appendChild(fragment);
+}
+
+function markAsRead(id) {
+  state.readNews.add(id);
+  saveSet(STORAGE_KEYS.readNews, state.readNews);
+  applyAndRender();
+}
+
+function clearReadHistory() {
+  state.readNews.clear();
+  saveSet(STORAGE_KEYS.readNews, state.readNews);
+  applyAndRender();
+}
+
+function toggleFavorite(id) {
+  if (state.favorites.has(id)) state.favorites.delete(id);
+  else state.favorites.add(id);
+  saveSet(STORAGE_KEYS.favorites, state.favorites);
+}
+
+async function shareNews(item) {
+  const payload = { title: item.title, text: item.description, url: item.link };
+  try {
+    if (navigator.share) {
+      await navigator.share(payload);
+      return;
+    }
+
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(`${item.title}\n${item.link}`);
+      statusText.textContent = 'Link panoya kopyalandı.';
+      return;
+    }
+
+    if (legacyCopyToClipboard(`${item.title}\n${item.link}`)) {
+      statusText.textContent = 'Link panoya kopyalandı (uyumlu mod).';
+      return;
+    }
+
+    statusText.textContent = 'Paylaşım desteklenmiyor.';
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function setupAutoRefresh() {
+  if (state.timerId) {
+    clearInterval(state.timerId);
+    state.timerId = null;
+  }
+
+  const seconds = Number(autoRefreshSelect.value);
+  if (seconds > 0) state.timerId = setInterval(loadNews, seconds * 1000);
+}
+
+function restoreTheme() {
+  const theme = localStorage.getItem(STORAGE_KEYS.theme) || 'light';
+  document.body.classList.toggle('dark', theme === 'dark');
+}
+
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark');
+  localStorage.setItem(STORAGE_KEYS.theme, isDark ? 'dark' : 'light');
+}
+
+function loadSet(key) {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+  } catch {
+    return new Set();
+  }
+}
+
+function saveSet(key, valueSet) {
+  localStorage.setItem(key, JSON.stringify(Array.from(valueSet)));
+}
+
+function legacyCopyToClipboard(text) {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.setAttribute('readonly', '');
+  textArea.style.position = 'fixed';
+  textArea.style.opacity = '0';
+  textArea.style.left = '-9999px';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  let copied = false;
+  try {
+    copied = document.execCommand('copy');
+  } catch {
+    copied = false;
+  }
+
+  document.body.removeChild(textArea);
+  return copied;
+}
+
+</script>
+  </body>
+</html>

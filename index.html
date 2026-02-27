@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Cep Haberim</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="theme-color" content="#0b66ff" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="hero">
+        <div>
+          <h1>Cep Haberim</h1>
+          <p>Başlıklara göre birleştirilmiş RSS/Atom haber akışı.</p>
+        </div>
+        <button id="themeBtn" type="button" class="ghost-btn">🌙 Tema</button>
+      </header>
+
+      <section class="controls" aria-label="Haber filtreleri">
+        <label for="sourceSelect">Haber başlığı</label>
+        <div class="control-row">
+          <select id="sourceSelect"></select>
+          <button id="refreshBtn" type="button">Yenile</button>
+        </div>
+
+        <div class="control-grid">
+          <div>
+            <label for="searchInput">Ara</label>
+            <input id="searchInput" type="search" placeholder="Başlık, özet veya kaynak içinde ara..." />
+          </div>
+          <div>
+            <label for="sortSelect">Sırala</label>
+            <select id="sortSelect">
+              <option value="newest">En yeni</option>
+              <option value="oldest">En eski</option>
+            </select>
+          </div>
+          <div>
+            <label for="autoRefreshSelect">Otomatik yenile</label>
+            <select id="autoRefreshSelect">
+              <option value="0">Kapalı</option>
+              <option value="60">1 dk</option>
+              <option value="180">3 dk</option>
+              <option value="300">5 dk</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="check-row">
+          <label class="check-item"><input id="unreadOnlyCheck" type="checkbox" /> Sadece okunmayanlar</label>
+          <button id="clearReadBtn" class="tiny-btn" type="button">Okunma geçmişini temizle</button>
+        </div>
+
+        <div class="segmented" role="tablist" aria-label="Görünüm modu">
+          <button id="allTab" type="button" class="segmented-btn active">Tüm Haberler</button>
+          <button id="favoritesTab" type="button" class="segmented-btn">Favoriler</button>
+        </div>
+
+        <p id="statusText" class="status">Başlık seç ve haberleri yükle.</p>
+        <p id="statsText" class="status small"></p>
+      </section>
+
+      <section>
+        <ul id="newsList" class="news-list" aria-live="polite"></ul>
+      </section>
+    </main>
+
+    <template id="newsCardTemplate">
+      <li class="news-card">
+        <div class="card-actions">
+          <span class="read-badge">Yeni</span>
+          <div>
+            <button class="tiny-btn fav-btn" type="button">☆ Favori</button>
+            <button class="tiny-btn share-btn" type="button">Paylaş</button>
+          </div>
+        </div>
+        <a class="news-link" target="_blank" rel="noopener noreferrer">
+          <img class="news-image" alt="Haber görseli" loading="lazy" />
+          <h2 class="news-title"></h2>
+          <p class="news-summary"></p>
+          <div class="news-meta">
+            <span class="news-date"></span>
+            <span class="news-source"></span>
+          </div>
+        </a>
+      </li>
+    </template>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
