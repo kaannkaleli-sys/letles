@@ -18,9 +18,8 @@ fun HomeScreen(
     state: MainUiState,
     onSelectPhoneSource: () -> Unit,
     onSelectDriveSource: () -> Unit,
-    onFetchFile: () -> Unit,
-    onSelectDownloadsLocation: () -> Unit,
-    onSelectDocumentsLocation: () -> Unit,
+    onPickWordFile: () -> Unit,
+    onPickSaveDirectory: () -> Unit,
     onConvertClick: () -> Unit
 ) {
     Column(
@@ -31,29 +30,26 @@ fun HomeScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("Word → PDF", style = MaterialTheme.typography.headlineSmall)
-        Text("Önce kaynağı seç, dosyayı çek, sonra kayıt konumu belirle")
+        Text("Kaynak seç, Word dosyasını aç, kayıt klasörünü seç")
 
-        Text("1) Dosya hangi kaynaktan seçilsin?", modifier = Modifier.padding(top = 14.dp))
+        Text("1) Dosya kaynağı", modifier = Modifier.padding(top = 14.dp))
         Button(onClick = onSelectPhoneSource, modifier = Modifier.padding(top = 8.dp)) { Text("Telefon Depolama") }
         Button(onClick = onSelectDriveSource, modifier = Modifier.padding(top = 8.dp)) { Text("Google Drive") }
 
         if (state.selectedSource.isNotBlank()) {
-            Text("Seçilen kaynak: ${state.selectedSource}", modifier = Modifier.padding(top = 10.dp))
-            Button(onClick = onFetchFile, modifier = Modifier.padding(top = 8.dp)) { Text("Kaynaktan dosyayı çek") }
+            Text("Kaynak: ${state.selectedSource}", modifier = Modifier.padding(top = 10.dp))
+            Button(onClick = onPickWordFile, modifier = Modifier.padding(top = 8.dp)) { Text("Word dosyası seç") }
         }
 
         if (state.selectedFileName.isNotBlank()) {
             Text("Dosya: ${state.selectedFileName}", modifier = Modifier.padding(top = 10.dp))
+            Button(onClick = onPickSaveDirectory, modifier = Modifier.padding(top = 8.dp)) { Text("PDF kayıt klasörü seç") }
+        }
 
-            Text("2) PDF nereye kaydedilsin?", modifier = Modifier.padding(top = 10.dp))
-            Button(onClick = onSelectDownloadsLocation, modifier = Modifier.padding(top = 8.dp)) { Text("Download") }
-            Button(onClick = onSelectDocumentsLocation, modifier = Modifier.padding(top = 8.dp)) { Text("Documents") }
-
-            if (state.selectedSaveLocation.isNotBlank()) {
-                Text("Kayıt konumu: ${state.selectedSaveLocation}", modifier = Modifier.padding(top = 10.dp))
-                Button(onClick = onConvertClick, modifier = Modifier.padding(top = 10.dp)) {
-                    Text("PDF'e dönüştür")
-                }
+        if (state.selectedSaveLocation.isNotBlank()) {
+            Text("Klasör seçildi", modifier = Modifier.padding(top = 10.dp))
+            Button(onClick = onConvertClick, modifier = Modifier.padding(top = 10.dp)) {
+                Text("PDF'e dönüştür")
             }
         }
 

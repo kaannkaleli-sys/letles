@@ -17,38 +17,20 @@ class MainViewModel(
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
     fun onSourceSelected(source: String) {
-        _uiState.value = _uiState.value.copy(
-            selectedSource = source,
-            selectedFileUri = "",
-            selectedFileName = "",
-            errorMessage = null,
-            outputPath = ""
-        )
+        _uiState.value = _uiState.value.copy(selectedSource = source, errorMessage = null)
     }
 
-    fun onFileFetchedFromSource() {
-        val source = _uiState.value.selectedSource
-        if (source.isBlank()) {
-            _uiState.value = _uiState.value.copy(errorMessage = "Önce dosya kaynağını seçin")
-            return
-        }
-
-        val (uri, name) = when (source) {
-            "Telefon Depolama" -> "content://local/storage/ornek.docx" to "ornek.docx"
-            "Google Drive" -> "content://drive/ornek.docx" to "drive_ornek.docx"
-            else -> "content://unknown/ornek.docx" to "ornek.docx"
-        }
-
+    fun onFileSelected(uri: String, fileName: String) {
         _uiState.value = _uiState.value.copy(
             selectedFileUri = uri,
-            selectedFileName = name,
+            selectedFileName = fileName,
             errorMessage = null,
             outputPath = ""
         )
     }
 
-    fun onSaveLocationSelected(location: String) {
-        _uiState.value = _uiState.value.copy(selectedSaveLocation = location, errorMessage = null)
+    fun onSaveLocationSelected(locationUri: String) {
+        _uiState.value = _uiState.value.copy(selectedSaveLocation = locationUri, errorMessage = null)
     }
 
     fun reset() {
@@ -58,15 +40,15 @@ class MainViewModel(
     fun startConversion() {
         val current = _uiState.value
         if (current.selectedSource.isBlank()) {
-            _uiState.value = current.copy(errorMessage = "Dosya kaynağını seçin")
+            _uiState.value = current.copy(errorMessage = "Önce dosya kaynağını seçin")
             return
         }
         if (current.selectedFileUri.isBlank()) {
-            _uiState.value = current.copy(errorMessage = "Kaynak seçtikten sonra dosyayı çekin")
+            _uiState.value = current.copy(errorMessage = "Word dosyasını seçin")
             return
         }
         if (current.selectedSaveLocation.isBlank()) {
-            _uiState.value = current.copy(errorMessage = "PDF'in nereye kaydedileceğini seçin")
+            _uiState.value = current.copy(errorMessage = "PDF kayıt klasörünü seçin")
             return
         }
 
@@ -77,9 +59,9 @@ class MainViewModel(
 
             when (
                 val result = convertDocxToPdfUseCase(
-                    current.selectedFileUri,
-                    current.selectedSaveLocation,
-                    outputName
+                    inputUri = current.selectedFileUri,
+                    outputDirectory = current.selectedSaveLocation,
+                    outputFileName = outputName
                 )
             ) {
                 is ConversionResult.Success -> {
