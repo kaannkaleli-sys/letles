@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word to PDF Android UI Preview</title>
+  <style>
+    body {font-family: Arial, sans-serif; background:#f3f4f6; margin:0; display:flex; align-items:center; justify-content:center; min-height:100vh;}
+    .phone {width:380px; background:white; border-radius:24px; box-shadow:0 12px 30px rgba(0,0,0,.15); padding:20px;}
+    h1 {font-size:24px; margin:0 0 4px;}
+    .sub {color:#666; margin-bottom:12px; font-size:14px;}
+    .section {font-weight:700; margin-top:10px; font-size:14px;}
+    .chip {display:block; width:100%; border:none; border-radius:10px; padding:10px; font-size:14px; margin-top:7px; background:#e5e7eb;}
+    .selected {background:#dbeafe; border:1px solid #93c5fd; border-radius:10px; padding:8px; margin-top:8px; font-size:13px;}
+    .primary {display:block; width:100%; border:none; border-radius:10px; padding:12px; font-size:15px; margin-top:10px; background:#2563eb; color:#fff;}
+    .ok {margin-top:14px; color:#166534; font-weight:700;}
+    .path {font-size:13px; color:#374151; background:#f9fafb; border:1px solid #e5e7eb; padding:8px; border-radius:8px; margin-top:6px;}
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <h1>Word → PDF</h1>
+    <div class="sub">Önce kaynağı seç, dosyayı çek, sonra kayıt konumu belirle</div>
+
+    <div class="section">1) Dosya hangi kaynaktan seçilsin?</div>
+    <button class="chip">Telefon Depolama</button>
+    <button class="chip">Google Drive</button>
+    <div class="selected">Seçilen kaynak: Telefon Depolama</div>
+    <button class="chip">Kaynaktan dosyayı çek</button>
+    <div class="selected">Dosya: ornek.docx</div>
+
+    <div class="section">2) PDF nereye kaydedilsin?</div>
+    <button class="chip">Download</button>
+    <button class="chip">Documents</button>
+    <div class="selected">Kayıt konumu: /storage/emulated/0/Download</div>
+
+    <button class="primary">PDF'e dönüştür</button>
+    <div class="ok">PDF kaydedildi</div>
+    <div class="path">/storage/emulated/0/Download/ornek.pdf</div>
+  </div>
+</body>
+</html>
