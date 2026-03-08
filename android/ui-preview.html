@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word to PDF Android UI Preview</title>
+  <style>
+    body {font-family: Arial, sans-serif; background:#f3f4f6; margin:0; display:flex; align-items:center; justify-content:center; min-height:100vh;}
+    .phone {width:360px; background:white; border-radius:24px; box-shadow:0 12px 30px rgba(0,0,0,.15); padding:20px;}
+    h1 {font-size:24px; margin:0 0 4px;}
+    .sub {color:#666; margin-bottom:18px;}
+    .file {background:#eef2ff; border:1px solid #c7d2fe; border-radius:10px; padding:10px; font-size:14px; margin:10px 0 12px;}
+    button {width:100%; border:none; border-radius:10px; padding:12px; font-size:15px; cursor:pointer;}
+    .primary {background:#2563eb; color:#fff; margin-top:8px;}
+    .secondary {background:#e5e7eb; color:#111827;}
+    .ok {margin-top:16px; color:#166534; font-weight:700;}
+    .path {font-size:13px; color:#374151; background:#f9fafb; border:1px solid #e5e7eb; padding:8px; border-radius:8px;}
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <h1>Word → PDF</h1>
+    <div class="sub">Offline dönüşüm prototipi</div>
+    <button class="secondary">Örnek .docx seç</button>
+    <div class="file">Seçilen: ornek.docx</div>
+    <button class="primary">PDF'e dönüştür</button>
+    <div class="ok">PDF kaydedildi</div>
+    <div class="path">/storage/emulated/0/Download/ornek.pdf</div>
+  </div>
+</body>
+</html>

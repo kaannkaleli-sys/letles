@@ -30,3 +30,8 @@ Ardından tarayıcıda aç:
 - Anadolu Ajansı - Güncel
 
 > Not: Bazı RSS kaynakları CORS nedeniyle doğrudan açılamadığı için uygulama `allorigins` proxy kullanır.
+
+## Yeni çalışma: Word → PDF Android
+- Android için offline Word (`.docx`) → PDF dönüşüm prototipi dosyaları: `android/`
+- Ürün ve mimari dokümanları: `docs/`
+
